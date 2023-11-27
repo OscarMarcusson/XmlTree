@@ -11,5 +11,18 @@ namespace XmlNavigation
 		public string value = "";
 
 		public List<XmlNode> children;
+
+
+
+		public string GetAttribute(string attribute, string defaultValue)
+		{
+			if (attributes == null)
+				return defaultValue;
+
+			if (attributes.TryGetValue(attribute, out var value))
+				return value;
+
+			return defaultValue;
+		}
 	}
 }
