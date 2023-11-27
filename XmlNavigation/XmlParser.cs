@@ -17,13 +17,14 @@ namespace XmlNavigation
 		public static XmlStructure FromString(string xml)
 		{
 			var doc = new XmlStructure();
-			var rootNode = new XmlNode();
 			for (int i = 0; i < xml.Length; i++)
 			{
 				if (char.IsWhiteSpace(xml[i]))
 					continue;
 
-				NodeParser.Parse(doc.nodes, xml, ref i);
+				NodeParser.Parse(doc, doc.nodes, xml, ref i);
+				if (doc.error != XmlError.None)
+					break;
 			}
 			return doc;
 		}

@@ -10,23 +10,21 @@ namespace XmlNavigation
 		static bool allowGoodAttributeEscapes = true;
 
 
-		internal static void Parse(List<XmlNode> parent, string xml, ref int i)
+		internal static void Parse(XmlStructure doc, List<XmlNode> parent, string xml, ref int i)
 		{
 			var builder = new StringBuilder(64);
-			while (i < xml.Length && xml[i] != '<')
+			xml.SkipWhitespace(ref i);
+			if (xml[i] != '<')
 			{
-				builder.Append(xml[i]);
-				i++;
+				// TODO: Parse error, no idea what the hell they gave us now
+				throw new NotImplementedException("ASD6543543: " + xml[i]);
 			}
 
 			if(builder.Length > 0)
 			{
 				var text = builder.ToString().Trim();
 				if(text.Length > 0)
-				{
-					var node = new XmlNode() { value = text };
-					parent.Add(node);
-				}
+					parent.Add(new XmlNode() { value = text });
 				builder.Clear();
 			}
 
@@ -102,7 +100,10 @@ namespace XmlNavigation
 							}
 						}
 
-						attributes[key] = builder.ToString();
+						var value = builder.ToString();
+						if (allowGoodAttributeEscapes) // TODO: Add escapes for the escapes, "\\\\n" == "\\n"
+							value = value.Replace("\\n", "\n").Replace("\\t", "\t");
+						attributes[key] = value;
 						builder.Clear();
 						xml.SkipWhitespace(ref i);
 					}
@@ -134,14 +135,13 @@ namespace XmlNavigation
 				return;
 			}
 
-			// Normal, expect potential value & end tag
+			// TODO: Parse eror, something like `<div class="example"` at the end of the file
 			if (xml[i] != '>')
-				throw new Exception("INTERNAL [I86244]: Reached content parse with invalid end of tag.\n" +
-					"This should not happen, sorry. Please send this to the developers together with the HTML");
+				throw new NotImplementedException("KE246842");
 			i++;
 			xml.SkipWhitespace(ref i);
 
-			// Unclosed tag at the end of a file, I guess we'll accept it for now
+			// Unclosed tag at the end of a file, I guess we'll accept it for now, kind of self closing in a way
 			if (i > xml.Length)
 			{
 				parent.Add(new XmlNode
@@ -152,7 +152,58 @@ namespace XmlNavigation
 				return;
 			}
 
-			var depth = 1;
+
+
+			// Now here we finally go, the actual content parsing
+			var node = new XmlNode
+			{
+				tag = tag,
+				attributes = attributes,
+			};
+			parent.Add(node);
+
+			
+			while(i < xml.Length && xml[i] != '<')
+				builder.Append(xml[i++]);
+
+			i++;
+			xml.SkipWhitespace(ref i);
+			if(i > xml.Length)
+			{
+				// TODO: Parse error, somelike like `<div>Hello` or `<div>Hello<` at the end of the file
+				throw new NotImplementedException("SDlk684646456");
+			}
+
+			// A closing tag now means this is a simple value element
+			if (xml[i] == '/')
+			{
+				node.value = builder.ToString().Trim();
+				builder.Clear();
+				i++;
+				xml.SkipWhitespace(ref i);
+				while (i < xml.Length && xml[i].IsIdentifier())
+					builder.Append(xml[i++]);
+
+				if (builder.ToString() != node.tag) 
+				{
+					doc.SetError(XmlError.ClosingMissmatch, xml.LastIndexOf('<', i));
+					return;
+				}
+				xml.SkipWhitespace(ref i);
+				if(i > xml.Length || xml[i] != '>')
+				{
+					// Missing last >, like `<div>Example</div`
+					throw new NotImplementedException("SDKO61584");
+				}
+				i++;
+				xml.SkipWhitespace(ref i);
+			}
+			// Else, we have some actual hierarchical content less goooooo
+			else
+			{
+				node.children = new List<XmlNode>();
+				var depth = 1;
+			}
 		}
 
 		static void ValidateSelfClosing(string xml, ref int i)
