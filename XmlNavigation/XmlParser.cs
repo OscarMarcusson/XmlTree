@@ -17,11 +17,8 @@ namespace XmlNavigation
 		public static XmlStructure FromString(string xml)
 		{
 			var doc = new XmlStructure();
-			for (int i = 0; i < xml.Length; i++)
+			for (int i = 0; i < xml.Length;)
 			{
-				if (char.IsWhiteSpace(xml[i]))
-					continue;
-
 				NodeParser.Parse(doc, doc.nodes, xml, ref i);
 				if (doc.error != XmlError.None)
 					break;

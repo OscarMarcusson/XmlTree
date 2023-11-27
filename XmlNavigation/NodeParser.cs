@@ -17,7 +17,7 @@ namespace XmlNavigation
 			if (xml[i] != '<')
 			{
 				// TODO: Parse error, no idea what the hell they gave us now
-				throw new NotImplementedException("ASD6543543: " + xml[i]);
+				throw new NotImplementedException("ASD6543543: " + xml.Substring(i));
 			}
 
 			if(builder.Length > 0)
@@ -220,6 +220,8 @@ namespace XmlNavigation
 				// TODO: Parse eror, something like `<div/what`
 				throw new NotImplementedException("NY387383");
 			}
+			i++;
+			xml.SkipWhitespace(ref i);
 		}
 
 		static void SkipWhitespace(this string xml, ref int i)
