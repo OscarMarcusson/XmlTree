@@ -23,30 +23,31 @@ namespace XmlNavigation
 				i++;
 				bytes.SkipWhitespace(ref i);
 				if (i >= bytes.Length)
-					throw new NotImplementedException("EOF after single <");
+					return bytes.Error(XmlError.UnexpectedEndOfFile);
 
-				var memes = bytes[i];
-				var asdasda = (char)memes;
 				if (bytes[i] == '?')
 				{
 					i++;
 					bytes.SkipWhitespace(ref i);
 					var builder = new StringBuilder();
-					while (i < bytes.Length && bytes[i] != '>' && bytes[i] != '?')
+					while (i < bytes.Length && bytes[i] != '>' && bytes[i] != '?' && bytes[i] != '<' && bytes[i] != '/')
 					{
 						builder.Append((char)bytes[i++]);
 						bytes.SkipNull(ref i);
 					}
 
 					if (i >= bytes.Length)
-						throw new NotImplementedException("EOF after prolog, missing ?>");
+						return bytes.Error(XmlError.UnexpectedEndOfFile);
 
-					if (bytes[i] == '?') i++;
+					if (bytes[i] == '<' || bytes[i] == '/') return bytes.Error(XmlError.Malformed, ((char)bytes[i]).ToString());
+					if (bytes[i] != '?') return bytes.Error(XmlError.Malformed, ((char)bytes[i]).ToString());
+					i++;
 					bytes.SkipWhitespace(ref i);
 					if (i >= bytes.Length)
-						throw new NotImplementedException("EOF after prolog, missing ?>");
+						return bytes.Error(XmlError.UnexpectedEndOfFile);
 
-					if (bytes[i] == '?') i++;
+					if (bytes[i] == '<' || bytes[i] == '/') return bytes.Error(XmlError.Malformed, ((char)bytes[i]).ToString());
+					if (bytes[i] == '>') i++;
 					bytes.SkipWhitespace(ref i);
 					if (i < bytes.Length && bytes[i] == '>') i++;
 					bytes.SkipWhitespace(ref i);
@@ -56,7 +57,7 @@ namespace XmlNavigation
 					var mainLength = bytes.Length - i;
 
 					var prolog = FromString(miniXml).nodes[0];
-					if (prolog.tag != "xml") throw new NotImplementedException("Invalid prolog start");
+					if (prolog.tag != "xml") return bytes.Error(XmlError.NotAllowed, prolog.tag);
 					var version = prolog.GetAttribute("version", "1.0");
 					var encoding = prolog.GetAttribute("encoding", "UTF-8");
 					var standalone = prolog.GetAttribute("standalone", "no");
@@ -81,7 +82,7 @@ namespace XmlNavigation
 							xml = Encoding.UTF32.GetString(bytes, mainStart, mainLength);
 							break;
 
-						default: throw new NotImplementedException("Unknown encoding: " + encoding);
+						default: return bytes.Error(XmlError.NotAllowed, encoding);
 					}
 
 					// TODO:: Use standalone?
@@ -120,6 +121,20 @@ namespace XmlNavigation
 		{
 			while (i < bytes.Length && bytes[i] == 0)
 				i++;
+		}
+
+		static XmlStructure Error(this byte[] bytes, XmlError error, string value = null)
+		{
+			var errorDoc = new XmlStructure(Encoding.UTF8.GetString(bytes));
+			var index = errorDoc.xml.IndexOf('<');
+			if (!string.IsNullOrWhiteSpace(value))
+			{
+				var valueIndex = errorDoc.xml.IndexOf(value, index + 1);
+				if (valueIndex > -1)
+					index = valueIndex;
+			}
+			errorDoc.SetError(error, index, value);
+			return errorDoc;
 		}
 	}
 }

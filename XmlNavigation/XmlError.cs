@@ -8,5 +8,8 @@ namespace XmlNavigation
 	{
 		None = 0,
 		ClosingMissmatch = 1,
+		UnexpectedEndOfFile = 2,
+		Malformed = 3,
+		NotAllowed = 4,
 	}
 }

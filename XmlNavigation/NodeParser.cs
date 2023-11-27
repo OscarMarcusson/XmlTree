@@ -186,7 +186,7 @@ namespace XmlNavigation
 
 				if (builder.ToString() != node.tag) 
 				{
-					doc.SetError(XmlError.ClosingMissmatch, xml.LastIndexOf('<', i));
+					doc.SetError(XmlError.ClosingMissmatch, xml.LastIndexOf('<', i), $"Expected {node.tag}");
 					return;
 				}
 				xml.SkipWhitespace(ref i);

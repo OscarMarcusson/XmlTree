@@ -34,5 +34,25 @@ namespace Tests
 			Assert.AreEqual("example", node.tag);
 			Assert.AreEqual("едц!", node.value);
 		}
+
+
+		[TestMethod]
+		[DataRow(@"<?", XmlError.UnexpectedEndOfFile)]
+		[DataRow(@"<?xml", XmlError.UnexpectedEndOfFile)]
+		[DataRow(@"<?incorrect version=""1.0"" encoding=""UTF-8""?> <example/>", XmlError.NotAllowed)]
+		[DataRow(@"<?xml version=""1.0"" encoding=""UTF-8""  <example/>", XmlError.Malformed)]
+		[DataRow(@"<?xml version=""1.0"" encoding=""UTF-8""? <example/>", XmlError.Malformed)]
+		[DataRow(@"<?xml version=""1.0"" encoding=""UTF-8""> <example/>", XmlError.Malformed)]
+		[DataRow(@"<?xml version=""1.0"" encoding=""UTF-8""", XmlError.UnexpectedEndOfFile)]
+		[DataRow(@"<?xml version=""1.0"" encoding=""UTF-9999""?> <example/>", XmlError.NotAllowed)]
+		[DataRow(@"<?xml version=""1.0"" encoding=""INCORRECT""?> <example/>", XmlError.NotAllowed)]
+		[DataRow(@"<?xml version=""1.0"" encoding=""""?> <example/>", XmlError.NotAllowed)]
+		public void Invalid(string xml, XmlError error)
+		{
+			var bytes = Encoding.UTF8.GetBytes(xml);
+			var doc = XmlParser.FromBytes(bytes);
+
+			Assert.AreEqual(error, doc.error);
+		}
 	}
 }

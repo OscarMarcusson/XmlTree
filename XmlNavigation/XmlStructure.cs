@@ -11,15 +11,17 @@ namespace XmlNavigation
 		public List<XmlNode> nodes = new List<XmlNode>();
 		public XmlError error;
 		public int errorIndex;
+		public string errorValue;
 
 
 
 		internal XmlStructure(string xml) => this.xml = xml;
 
-		internal void SetError(XmlError error, int index)
+		internal void SetError(XmlError error, int index, string description = null)
 		{
 			this.error = error;
 			this.errorIndex = index;
+			this.errorValue = description;
 		}
 	}
 }
