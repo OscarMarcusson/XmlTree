@@ -125,11 +125,19 @@ namespace XmlNavigation
 
 		static XmlStructure Error(this byte[] bytes, XmlError error, string value = null)
 		{
-			var errorDoc = new XmlStructure(Encoding.UTF8.GetString(bytes));
+			var xmlBuilder = new StringBuilder();
+			foreach(var b in bytes)
+			{
+				if (b == 0)
+					continue;
+				xmlBuilder.Append((char)b);
+			}
+			var xml = xmlBuilder.ToString();
+			var errorDoc = new XmlStructure(xml);
 			var index = errorDoc.xml.IndexOf('<');
 			if (!string.IsNullOrWhiteSpace(value))
 			{
-				var valueIndex = errorDoc.xml.IndexOf(value, index + 1);
+				var valueIndex = xml.IndexOf(value, index + 1);
 				if (valueIndex > -1)
 					index = valueIndex;
 			}
