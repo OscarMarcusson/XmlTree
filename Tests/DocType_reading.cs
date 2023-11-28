@@ -60,5 +60,16 @@ namespace Tests
 			Assert.AreEqual("", doc.nodes[0].value);
 			Assert.IsNull(doc.nodes[0].children);
 		}
+
+		[TestMethod]
+		public void Error_for_doctype_within_content()
+		{
+			var doc = XmlParser.FromString(@"
+				<html></html>
+				<!DOCTYPE html>
+				");
+
+			Assert.AreEqual(XmlError.NotAllowed, doc.error);
+		}
 	}
 }

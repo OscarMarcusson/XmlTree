@@ -26,6 +26,7 @@ namespace XmlNavigation
 			i++;
 			xml.SkipWhitespace(ref i);
 			if (i > xml.Length) { doc.SetError(XmlError.UnexpectedEndOfFile, i, "Missing element tag"); return; }
+			var startOfTagIndex = i;
 			if (xml[i] == '!')
 			{
 				builder.Append(xml[i]);
@@ -42,6 +43,7 @@ namespace XmlNavigation
 			var tag = builder.ToString();
 			builder.Clear();
 			if (tag.Length == 0) { doc.SetError(XmlError.UnexpectedEndOfFile, i, "Missing element tag"); return; }
+			if(tag.Equals("!doctype", StringComparison.OrdinalIgnoreCase)) { doc.SetError(XmlError.NotAllowed, startOfTagIndex, "The <!DOCTYPE> may only be set at the beginning of the file"); return; }
 
 			xml.SkipWhitespace(ref i);
 			if(i > xml.Length)
