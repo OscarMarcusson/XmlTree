@@ -6,6 +6,7 @@ namespace XmlNavigation
 {
 	public class XmlStructure
 	{
+		public string docType;
 		public string version = "1.0";
 		public string xml = "";
 		public List<XmlNode> nodes = new List<XmlNode>();
