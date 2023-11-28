@@ -6,6 +6,18 @@ namespace Tests
 	public class Hierarchical_xml
 	{
 		[TestMethod]
+		[DataRow(14, "<div><correct></incorrect></div>")]
+		[DataRow(19, "<div><correct>Value</incorrect></div>")]
+		[DataRow(35, "<div><correct class=\"Example\">Value</incorrect></div>")]
+		[DataRow(49, "<div><  correct   class  = \"Example\" >   Value   < /   incorrect></div>")]
+		public void Wrong_closing_tag(int errorIndex, string xml)
+		{
+			var doc = XmlParser.FromString(xml);
+			Assert.AreEqual(XmlError.ClosingMissmatch, doc.error);
+			Assert.AreEqual(errorIndex, doc.errorIndex);
+		}
+
+		[TestMethod]
 		public void With_values()
 		{
 			var doc = XmlParser.FromString(@"
@@ -19,47 +31,39 @@ namespace Tests
 				</div-2>
 				");
 			Assert.AreEqual(2, doc.nodes.Count);
-			var div1 = doc.nodes[0];
-			var div2 = doc.nodes[1];
-			Assert.AreEqual("div-1", div1.tag);
-			Assert.AreEqual("div-2", div2.tag);
 
+			var div1 = doc.nodes[0];
+			Assert.AreEqual("div-1", div1.tag);
 			Assert.IsNotNull(div1.children);
 			Assert.AreEqual(3, div1.children.Count);
 			Assert.AreEqual("test-1", div1.children[0].tag);
-			Assert.AreEqual("test-2", div1.children[1].tag);
-			Assert.AreEqual("test-3", div1.children[2].tag);
-			
+			Assert.AreEqual("", div1.children[0].value);
 
+			Assert.AreEqual("test-2", div1.children[1].tag);
+			Assert.AreEqual("", div1.children[1].value);
+
+			Assert.AreEqual("test-3", div1.children[2].tag);
+			Assert.AreEqual("Hello World", div1.children[2].value);
+
+			var test3 = div1.children[2];
+			Assert.IsNotNull(test3.attributes);
+			Assert.AreEqual(2, test3.attributes.Count);
+			Assert.AreEqual("example", test3.attributes["class"]);
+			Assert.AreEqual("lorem ipsum", test3.attributes["id"]);
+
+
+			var div2 = doc.nodes[1];
+			Assert.AreEqual("div-2", div2.tag);
 			Assert.IsNotNull(div2.children);
 			Assert.AreEqual(1, div2.children.Count);
-			Assert.AreEqual("test-4", div2.children[0].tag);
 
-
-			//Assert.AreEqual("", doc.nodes[0].value);
-			//Assert.AreEqual("", doc.nodes[1].value);
-			//Assert.AreEqual("Hello World", doc.nodes[2].value);
-			//Assert.AreEqual("Hello World", doc.nodes[3].value);
-
-			//// test 1
-			//Assert.IsNull(doc.nodes[0].attributes);
-
-			//// test 2
-			//Assert.IsNotNull(doc.nodes[1].attributes);
-			//Assert.AreEqual(1, doc.nodes[1].attributes.Count);
-			//Assert.AreEqual("example", doc.nodes[1].attributes["class"]);
-
-			//// test 3
-			//Assert.IsNotNull(doc.nodes[2].attributes);
-			//Assert.AreEqual(2, doc.nodes[2].attributes.Count);
-			//Assert.AreEqual("example", doc.nodes[2].attributes["class"]);
-			//Assert.AreEqual("lorem ipsum", doc.nodes[2].attributes["id"]);
-
-			//// test 4
-			//Assert.IsNotNull(doc.nodes[3].attributes);
-			//Assert.AreEqual(2, doc.nodes[3].attributes.Count);
-			//Assert.AreEqual("example", doc.nodes[3].attributes["class"]);
-			//Assert.AreEqual("lorem ipsum", doc.nodes[3].attributes["id"]);
+			var test4 = div2.children[0];
+			Assert.AreEqual("test-4", test4.tag);
+			Assert.AreEqual("Hello World", test4.value);
+			Assert.IsNotNull(test4.attributes);
+			Assert.AreEqual(2, test4.attributes.Count);
+			Assert.AreEqual("example", test4.attributes["class"]);
+			Assert.AreEqual("lorem ipsum", test4.attributes["id"]);
 		}
 
 		[TestMethod]
