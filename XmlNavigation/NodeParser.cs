@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using XmlNavigation.Utility;
 
@@ -11,7 +12,7 @@ namespace XmlNavigation
 		static bool allowGoodAttributeEscapes = true;
 
 
-		internal static void Parse(XmlStructure doc, List<XmlNode> parent, string xml, ref int i)
+		internal static void Parse(XmlStructure doc, List<XmlNode> parent, string xml, ref int i, ParserOptions options)
 		{
 			var builder = new StringBuilder(64);
 			xml.SkipWhitespace(ref i);
@@ -129,9 +130,15 @@ namespace XmlNavigation
 			}
 
 			// Self closing
-			if (xml[i] == '/')
+			if (xml[i] == '/' || (xml[i] == '>' && options.selfClosingTags.Contains(tag)))
 			{
-				ValidateSelfClosing(xml, ref i);
+				if (xml[i] == '/')
+					xml.GotoNextNonWhitespace(ref i);
+
+				if (i > xml.Length) { doc.SetError(XmlError.UnexpectedEndOfFile, i, "Expected />"); return; }
+				if (xml[i] != '>') { doc.SetError(XmlError.Malformed, i, "Expected >"); return; }
+				xml.GotoNextNonWhitespace(ref i);
+				
 				parent.Add(new XmlNode
 				{
 					tag = tag,
@@ -185,8 +192,8 @@ namespace XmlNavigation
 			{
 				node.value = builder.ToString().Trim();
 				builder.Clear();
-				i++;
-				xml.SkipWhitespace(ref i);
+				xml.GotoNextNonWhitespace(ref i);
+
 				while (i < xml.Length && xml[i].IsIdentifier())
 					builder.Append(xml[i++]);
 
@@ -218,7 +225,7 @@ namespace XmlNavigation
 				while (i < xml.Length && doc.error == XmlError.None)
 				{
 					// Parse the first child node
-					Parse(doc, node.children, xml, ref i);
+					Parse(doc, node.children, xml, ref i, options);
 					if (doc.error != XmlError.None) return;
 					xml.SkipWhitespace(ref i);
 					if (i >= xml.Length) return;
@@ -250,24 +257,6 @@ namespace XmlNavigation
 					}
 				}
 			}
-		}
-
-		static void ValidateSelfClosing(string xml, ref int i)
-		{
-			i++;
-			xml.SkipWhitespace(ref i);
-			if (i > xml.Length)
-			{
-				// TODO: Parse eror, something like `<div/` at the end of the file
-				throw new NotImplementedException("SP23483");
-			}
-			if (xml[i] != '>')
-			{
-				// TODO: Parse eror, something like `<div/what`
-				throw new NotImplementedException("NY387383");
-			}
-			i++;
-			xml.SkipWhitespace(ref i);
 		}
 	}
 }

@@ -12,6 +12,12 @@ namespace XmlNavigation.Utility
 				i++;
 		}
 
+		public static void GotoNextNonWhitespace(this string xml, ref int i)
+		{
+			i++;
+			while (i < xml.Length && char.IsWhiteSpace(xml[i]))
+				i++;
+		}
 
 		public static bool IsEndTag(this char c) => c == '>' || c == '/';
 

@@ -9,13 +9,13 @@ namespace XmlNavigation
 {
 	public static class XmlParser
 	{
-		public static XmlStructure FromFile(string path)
+		public static XmlStructure FromFile(string path, ParserOptions options = null)
 		{
 			var xml = File.ReadAllBytes(path);
-			return FromBytes(xml);
+			return FromBytes(xml, options);
 		}
 
-		public static XmlStructure FromBytes(byte[] bytes)
+		public static XmlStructure FromBytes(byte[] bytes, ParserOptions options = null)
 		{
 			// Resolve the prolog, if one exists, like: <?xml version="1.0" encoding="UTF-8"?>
 			var i = 0;
@@ -87,8 +87,7 @@ namespace XmlNavigation
 						default: return bytes.Error(XmlError.NotAllowed, encoding);
 					}
 
-					// TODO:: Use standalone?
-					var doc = FromString(xml);
+					var doc = FromString(xml, options);
 					doc.version = version;
 					return doc;
 				}
@@ -96,12 +95,15 @@ namespace XmlNavigation
 
 			// The standard fallback for XML is UTF-8
 			var defaultEncodedXml = Encoding.UTF8.GetString(bytes);
-			return FromString(defaultEncodedXml);
+			return FromString(defaultEncodedXml, options);
 		}
 
 
-		public static XmlStructure FromString(string xml)
+		public static XmlStructure FromString(string xml, ParserOptions options = null)
 		{
+			var optionsToUse = DefaultParserOptions.XML;
+			optionsToUse.selfClosingTags = options?.selfClosingTags ?? optionsToUse.selfClosingTags;
+
 			// Resolve the doctype, if any
 			string docType = null;
 			int skipped = 0;
@@ -152,6 +154,13 @@ namespace XmlNavigation
 
 				docType = xml.Substring(start, end - start).Trim();
 				skipped = end + 1;
+
+				// TODO:: Use standalone?
+				if (docType.Equals("html", StringComparison.OrdinalIgnoreCase))
+				{
+					// TODO:: If other is already set, what do? Enum to handle override / ignore etc?
+					optionsToUse.selfClosingTags = DefaultParserOptions.HTML.selfClosingTags;
+				}
 				break;
 			}
 
@@ -160,7 +169,7 @@ namespace XmlNavigation
 			doc.docType = docType;
 			for (int i = skipped; i < xml.Length;)
 			{
-				NodeParser.Parse(doc, doc.nodes, xml, ref i);
+				NodeParser.Parse(doc, doc.nodes, xml, ref i, optionsToUse);
 				if (doc.error != XmlError.None)
 					break;
 			}
