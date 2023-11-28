@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using XmlNavigation.Utility;
 
 namespace XmlNavigation
 {
@@ -14,25 +15,25 @@ namespace XmlNavigation
 		{
 			var builder = new StringBuilder(64);
 			xml.SkipWhitespace(ref i);
-			if (xml[i] != '<')
-			{
-				// TODO: Parse error, no idea what the hell they gave us now
-				throw new NotImplementedException("ASD6543543: " + xml.Substring(i));
-			}
-
-			if(builder.Length > 0)
-			{
-				var text = builder.ToString().Trim();
-				if(text.Length > 0)
-					parent.Add(new XmlNode() { value = text });
-				builder.Clear();
-			}
-
 			if (i >= xml.Length)
+			{
+				doc.SetError(XmlError.UnexpectedEndOfFile, i);
 				return;
+			}
+			if (xml[i] != '<') { doc.SetError(XmlError.Malformed, i, "Expected <"); return; }
 
 			// Get tag
-			for(i++; i < xml.Length; i++)
+			i++;
+			xml.SkipWhitespace(ref i);
+			if (i > xml.Length) { doc.SetError(XmlError.UnexpectedEndOfFile, i, "Missing element tag"); return; }
+			if (xml[i] == '!')
+			{
+				builder.Append(xml[i]);
+				i++;
+				xml.SkipWhitespace(ref i);
+				// TODO: Special handling for --
+			}
+			for (; i < xml.Length; i++)
 			{
 				if (char.IsWhiteSpace(xml[i]) || xml[i] == '>' || xml[i] == '/')
 					break;
@@ -40,6 +41,8 @@ namespace XmlNavigation
 			}
 			var tag = builder.ToString();
 			builder.Clear();
+			if (tag.Length == 0) { doc.SetError(XmlError.UnexpectedEndOfFile, i, "Missing element tag"); return; }
+
 			xml.SkipWhitespace(ref i);
 			if(i > xml.Length)
 			{
@@ -190,7 +193,7 @@ namespace XmlNavigation
 					return;
 				}
 				xml.SkipWhitespace(ref i);
-				if(i > xml.Length || xml[i] != '>')
+				if(i >= xml.Length || xml[i] != '>')
 				{
 					// Missing last >, like `<div>Example</div`
 					throw new NotImplementedException("SDKO61584");
@@ -223,17 +226,5 @@ namespace XmlNavigation
 			i++;
 			xml.SkipWhitespace(ref i);
 		}
-
-		static void SkipWhitespace(this string xml, ref int i)
-		{
-			while (i < xml.Length && char.IsWhiteSpace(xml[i]))
-				i++;
-		}
-
-
-		static bool IsEndTag(this char c) => c == '>' || c == '/';
-
-
-		static bool IsIdentifier(this char c) => char.IsLetterOrDigit(c) || c == '-' || c == '_';
 	}
 }

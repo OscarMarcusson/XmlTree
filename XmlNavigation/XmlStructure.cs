@@ -21,7 +21,7 @@ namespace XmlNavigation
 		internal void SetError(XmlError error, int index, string description = null)
 		{
 			this.error = error;
-			this.errorIndex = index;
+			this.errorIndex = Math.Max(0, Math.Min(xml.Length - 1, index));
 			this.errorValue = description;
 		}
 	}

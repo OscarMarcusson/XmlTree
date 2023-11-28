@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using XmlNavigation.Utility;
 
 namespace XmlNavigation
 {
@@ -100,8 +102,63 @@ namespace XmlNavigation
 
 		public static XmlStructure FromString(string xml)
 		{
+			// Resolve the doctype, if any
+			string docType = null;
+			int skipped = 0;
+			for(int i = 0; i < xml.Length; i++)
+			{
+				xml.SkipWhitespace(ref i);
+				if (i >= xml.Length || xml[i] != '<') break;
+				i++;
+				xml.SkipWhitespace(ref i);
+				if (i >= xml.Length || xml[i] != '!') break;
+				i++;
+				xml.SkipWhitespace(ref i);
+				if (i >= xml.Length) break;
+
+				// Special handling for comments at start
+				if (xml[i] == '-')
+				{
+					i = xml.IndexOf("-->", i);
+					if(i < 0)
+					{
+						var error = new XmlStructure(xml);
+						error.SetError(XmlError.UnexpectedEndOfFile, xml.Length, "Missing -->");
+						return error;
+					}
+					i += 2;
+					var remainder = xml.Substring(i);
+					// Comment skipped, try again
+					continue;
+				}
+
+				var builder = new StringBuilder();
+				while (i < xml.Length && xml[i].IsIdentifier())
+					builder.Append(xml[i++]);
+
+				if (!builder.ToString().Equals("doctype", StringComparison.OrdinalIgnoreCase))
+					break;
+
+				// This is a doctype, resolve it
+				xml.SkipWhitespace(ref i);
+				var start = i;
+				var end = xml.IndexOf('>', start + 1);
+				if(end < start)
+				{
+					var error = new XmlStructure(xml);
+					error.SetError(XmlError.UnexpectedEndOfFile, xml.Length, "Missing >");
+					return error;
+				}
+
+				docType = xml.Substring(start, end - start).Trim();
+				skipped = end + 1;
+				break;
+			}
+
+
 			var doc = new XmlStructure(xml);
-			for (int i = 0; i < xml.Length;)
+			doc.docType = docType;
+			for (int i = skipped; i < xml.Length;)
 			{
 				NodeParser.Parse(doc, doc.nodes, xml, ref i);
 				if (doc.error != XmlError.None)
