@@ -3,7 +3,7 @@ using XmlNavigation;
 namespace Tests
 {
 	[TestClass]
-	public class XML
+	public class Flat_xml
 	{
 		[TestMethod]
 		public void Empty()
@@ -25,7 +25,7 @@ namespace Tests
 		}
 
 		[TestMethod]
-		public void Flat()
+		public void With_values()
 		{
 			var doc = XmlParser.FromString(@"
 				<test-1></test-1>
@@ -69,7 +69,7 @@ namespace Tests
 		}
 
 		[TestMethod]
-		public void Flat_self_closing()
+		public void Self_closing()
 		{
 			var doc = XmlParser.FromString(@"
 				<test-1/>
