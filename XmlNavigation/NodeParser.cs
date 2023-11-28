@@ -171,6 +171,7 @@ namespace XmlNavigation
 			while(i < xml.Length && xml[i] != '<')
 				builder.Append(xml[i++]);
 
+			startOfTagIndex = i;
 			i++;
 			xml.SkipWhitespace(ref i);
 			if(i > xml.Length)
@@ -213,11 +214,12 @@ namespace XmlNavigation
 				if (prefixText.Length > 0)
 					parent.Add(new XmlNode { value = prefixText });
 
-				i--;
+				i = startOfTagIndex;
 				while (i < xml.Length && doc.error == XmlError.None)
 				{
 					// Parse the first child node
 					Parse(doc, node.children, xml, ref i);
+					if (doc.error != XmlError.None) return;
 					xml.SkipWhitespace(ref i);
 					if (i >= xml.Length) return;
 
