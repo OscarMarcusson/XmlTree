@@ -207,7 +207,46 @@ namespace XmlNavigation
 			else
 			{
 				node.children = new List<XmlNode>();
-				var depth = 1;
+
+				// Add the text up until now as a text value, like `<div> This text <span>!</span></div>`
+				var prefixText = builder.ToString().Trim();
+				if (prefixText.Length > 0)
+					parent.Add(new XmlNode { value = prefixText });
+
+				i--;
+				while (i < xml.Length && doc.error == XmlError.None)
+				{
+					// Parse the first child node
+					Parse(doc, node.children, xml, ref i);
+					xml.SkipWhitespace(ref i);
+					if (i >= xml.Length) return;
+
+					// Inlined text
+					if (xml[i] != '<')
+					{
+						throw new NotImplementedException("TEXT AS66848646");
+					}
+					// End of this node
+					if (xml[i] == '<')
+					{
+						var nextIndex = i + 1;
+						xml.SkipWhitespace(ref nextIndex);
+						if (nextIndex >= xml.Length) continue; // Let the regular parser handle this error
+						if (xml[nextIndex] == '/')
+						{
+							// End of tag
+							// TODO:: Validate value
+							i = xml.IndexOf('>', nextIndex) + 1;
+							if(i < nextIndex)
+							{
+								doc.SetError(XmlError.Malformed, nextIndex, "No closing >");
+								i = nextIndex;
+								return;
+							}
+							break;
+						}
+					}
+				}
 			}
 		}
 
