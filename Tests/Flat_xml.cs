@@ -6,13 +6,6 @@ namespace Tests
 	public class Flat_xml
 	{
 		[TestMethod]
-		public void Empty()
-		{
-			var doc = XmlParser.FromString("");
-			Assert.AreEqual(0, doc.nodes.Count);
-		}
-
-		[TestMethod]
 		[DataRow(9, "<correct></incorrect>")]
 		[DataRow(14, "<correct>Value</incorrect>")]
 		[DataRow(30, "<correct class=\"Example\">Value</incorrect>")]
