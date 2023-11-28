@@ -30,6 +30,7 @@ namespace Tests
 
 		private static void TestHtml(XmlStructure doc)
 		{
+			Assert.AreEqual(XmlError.None, doc.error);
 			Assert.AreEqual(1, doc.nodes.Count);
 			var html = doc.nodes[0];
 			Assert.AreEqual("html", html.tag);

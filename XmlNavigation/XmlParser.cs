@@ -129,7 +129,6 @@ namespace XmlNavigation
 						return error;
 					}
 					i += 2;
-					var remainder = xml.Substring(i);
 					// Comment skipped, try again
 					continue;
 				}
@@ -169,6 +168,10 @@ namespace XmlNavigation
 			doc.docType = docType;
 			for (int i = skipped; i < xml.Length;)
 			{
+				xml.SkipWhitespace(ref i);
+				if (i >= xml.Length)
+					break;
+
 				NodeParser.Parse(doc, doc.nodes, xml, ref i, optionsToUse);
 				if (doc.error != XmlError.None)
 					break;
