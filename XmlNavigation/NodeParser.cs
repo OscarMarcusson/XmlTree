@@ -24,15 +24,35 @@ namespace XmlNavigation
 			if (xml[i] != '<') { doc.SetError(XmlError.Malformed, i, "Expected <"); return; }
 
 			// Get tag
-			i++;
-			xml.SkipWhitespace(ref i);
+			xml.GotoNextNonWhitespace(ref i);
 			if (i > xml.Length) { doc.SetError(XmlError.UnexpectedEndOfFile, i, "Missing element tag"); return; }
 			var startOfTagIndex = i;
 			if (xml[i] == '!')
 			{
+				// Comment parsing
+				if(i + 2 < xml.Length && xml[i+1] == '-' && xml[i+2] == '-')
+				{
+					i += 2;
+					xml.GotoNextNonWhitespace(ref i);
+					var commentEndIndex = xml.IndexOf("-->", i);
+					if(commentEndIndex < 0) { doc.SetError(XmlError.UnexpectedEndOfFile, xml.Length, "Expected -->"); return; }
+
+					if(options.comments == CommentOptions.Include)
+					{
+						var comment = xml.Substring(i, commentEndIndex - i).Trim();
+						parent.Add(new XmlNode
+						{
+							tag = "!--",
+							value = comment,
+						});
+					}
+
+					i = commentEndIndex + 3;
+					return;
+				}
+
 				builder.Append(xml[i]);
-				i++;
-				xml.SkipWhitespace(ref i);
+				xml.GotoNextNonWhitespace(ref i);
 				// TODO: Special handling for --
 			}
 			for (; i < xml.Length; i++)
@@ -76,8 +96,7 @@ namespace XmlNavigation
 
 					if (xml[i] == '=')
 					{
-						i++;
-						xml.SkipWhitespace(ref i);
+						xml.GotoNextNonWhitespace(ref i);
 						if (xml[i].IsEndTag())
 						{
 							// TODO: Parse error, `<div class=/`
@@ -150,8 +169,7 @@ namespace XmlNavigation
 			// TODO: Parse eror, something like `<div class="example"` at the end of the file
 			if (xml[i] != '>')
 				throw new NotImplementedException("KE246842");
-			i++;
-			xml.SkipWhitespace(ref i);
+			xml.GotoNextNonWhitespace(ref i);
 
 			// Unclosed tag at the end of a file, I guess we'll accept it for now, kind of self closing in a way
 			if (i > xml.Length)
@@ -179,9 +197,8 @@ namespace XmlNavigation
 				builder.Append(xml[i++]);
 
 			startOfTagIndex = i;
-			i++;
-			xml.SkipWhitespace(ref i);
-			if(i > xml.Length)
+			xml.GotoNextNonWhitespace(ref i);
+			if (i > xml.Length)
 			{
 				// TODO: Parse error, somelike like `<div>Hello` or `<div>Hello<` at the end of the file
 				throw new NotImplementedException("SDlk684646456");
@@ -208,8 +225,7 @@ namespace XmlNavigation
 					// Missing last >, like `<div>Example</div`
 					throw new NotImplementedException("SDKO61584");
 				}
-				i++;
-				xml.SkipWhitespace(ref i);
+				xml.GotoNextNonWhitespace(ref i);
 			}
 			// Else, we have some actual hierarchical content less goooooo
 			else
@@ -219,7 +235,7 @@ namespace XmlNavigation
 				// Add the text up until now as a text value, like `<div> This text <span>!</span></div>`
 				var prefixText = builder.ToString().Trim();
 				if (prefixText.Length > 0)
-					parent.Add(new XmlNode { value = prefixText });
+					node.children.Add(new XmlNode { value = prefixText });
 
 				i = startOfTagIndex;
 				while (i < xml.Length && doc.error == XmlError.None)
@@ -255,6 +271,20 @@ namespace XmlNavigation
 							break;
 						}
 					}
+				}
+
+				// If we only have text, which may happen if we have comments + raw text,
+				// then we lift that text into the node value instead
+				if (node.children.All(x => x.tag.Length == 0))
+				{
+					// TODO:: More content aware join?
+					node.value = string.Join("\n", node.children.Select(x => x.value));
+					node.children = null;
+				}
+				// If we have nothing, for example due to comments, we clear the child list
+				else if(node.children.Count == 0)
+				{
+					node.children = null;
 				}
 			}
 		}

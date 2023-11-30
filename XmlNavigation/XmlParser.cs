@@ -101,8 +101,7 @@ namespace XmlNavigation
 
 		public static XmlStructure FromString(string xml, ParserOptions options = null)
 		{
-			var optionsToUse = DefaultParserOptions.XML;
-			optionsToUse.selfClosingTags = options?.selfClosingTags ?? optionsToUse.selfClosingTags;
+			var optionsToUse = options?.CreateCopy() ?? DefaultParserOptions.XML;
 
 			// Resolve the doctype, if any
 			string docType = null;

@@ -28,6 +28,15 @@ namespace XmlNavigation
 
 		public override string ToString()
 		{
+			// Special handling for comments
+			if (tag == "!--")
+			{
+				return this.value.Length > 0
+					? $"<!-- {this.value} -->"
+					: $"<!-- -->"
+					;
+			}
+
 			var value = !string.IsNullOrWhiteSpace(this.value)
 				? this.value
 				: children?.Count > 0 ? " ... " : ""
