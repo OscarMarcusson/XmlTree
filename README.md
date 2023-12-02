@@ -19,7 +19,7 @@ Console.WriteLine(doc.nodes[0].value); // > Hello World!
 
 ```csharp
 // Include or ignore comments
-var options = new ParserOptions { comments = CommentOptions.Include };
+var options = new XmlTree.ParserOptions { comments = CommentOptions.Include };
 var doc = XmlTree.Parse.String("<!-- Comments work! -->", options);
 Console.WriteLine(doc.nodes[0].tag); // > !--
 Console.WriteLine(doc.nodes[0].value); // > Comments work!
