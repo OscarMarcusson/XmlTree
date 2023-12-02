@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>XML Tree</Title>
-    <VersionPrefix>0.1.10</VersionPrefix>
+    <VersionPrefix>1.0.0</VersionPrefix>
     <Authors>Oscar_Marcusson</Authors>
     <RepositoryUrl>https://github.com/OscarMarcusson/XmlNavigation</RepositoryUrl>
     <PackageIcon>XmlTree_main_icon.png</PackageIcon>
