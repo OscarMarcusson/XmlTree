@@ -175,6 +175,13 @@ namespace XmlNavigation
 				if (doc.error != XmlError.None)
 					break;
 			}
+
+			if(optionsToUse.escape != EscapeFlags.None)
+			{
+				foreach (var node in doc.nodes)
+					node.ReplaceEscaped(optionsToUse.escape);
+			}
+
 			return doc;
 		}
 

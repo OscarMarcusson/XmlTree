@@ -55,9 +55,10 @@ namespace XmlNavigation
 				xml.GotoNextNonWhitespace(ref i);
 				// TODO: Special handling for --
 			}
+			// Read the element name
 			for (; i < xml.Length; i++)
 			{
-				if (char.IsWhiteSpace(xml[i]) || xml[i] == '>' || xml[i] == '/')
+				if (char.IsWhiteSpace(xml[i]) || xml[i].IsEndTag())
 					break;
 				builder.Append(xml[i]);
 			}
@@ -80,7 +81,7 @@ namespace XmlNavigation
 				attributes = new Dictionary<string, string>();
 				while(i < xml.Length && !xml[i].IsEndTag())
 				{
-					while(i < xml.Length && xml[i].IsIdentifier())
+					while(i < xml.Length && !char.IsWhiteSpace(xml[i]) && !xml[i].IsEndTag() && xml[i] != '=')
 					{
 						builder.Append(xml[i]);
 						i++;
@@ -137,6 +138,8 @@ namespace XmlNavigation
 						attributes[key] = null;
 						if (xml[i].IsEndTag())
 							break;
+						else
+							i++;
 					}
 				}
 			}

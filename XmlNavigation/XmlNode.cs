@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using XmlNavigation.Utility;
 
 namespace XmlNavigation
 {
@@ -50,6 +51,30 @@ namespace XmlNavigation
 				return $"<{tag}{attributesString}/>";
 
 			return $"<{tag}/>";
+		}
+
+		internal void ReplaceEscaped(EscapeFlags escape)
+		{
+			if(escape.HasFlag(EscapeFlags.ElementNames))
+				tag = tag.ReplaceEscaped();
+
+			if (escape.HasFlag(EscapeFlags.Text))
+				value = value.ReplaceEscaped();
+
+			if(attributes?.Count > 0 && (escape.HasFlag(EscapeFlags.AttributeNames) || escape.HasFlag(EscapeFlags.AttributeValues)))
+			{
+				var key = escape.HasFlag(EscapeFlags.AttributeNames);
+				var value = escape.HasFlag(EscapeFlags.AttributeValues);
+				attributes = attributes.ToDictionary(
+					pair => key ? pair.Key.ReplaceEscaped() : pair.Key,
+					pair => value ? pair.Value.ReplaceEscaped() : pair.Value);
+			}
+
+			if(children?.Count > 0)
+			{
+				foreach (var node in children)
+					node.ReplaceEscaped(escape);
+			}
 		}
 	}
 }
