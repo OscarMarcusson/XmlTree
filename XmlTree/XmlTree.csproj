@@ -10,6 +10,8 @@
     <PackageIcon>XmlTree_main_icon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>A utility for parsing XML structures without all the hassle</Description>
+    <PackageTags>xml;parser;utility;tree</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
