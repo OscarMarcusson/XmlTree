@@ -1,6 +1,31 @@
 # Xml Tree
 
-A utility for parsing XML structures without all the hassle. What you get:
+A utility for parsing XML structures without all the hassle. 
+
+```csharp
+// Parse files
+var doc = XmlTree.Parse.File("c:/dir/my-file.xml");
+foreach(var rootNode in doc.nodes) {
+    // Do something
+}
+```
+
+```csharp
+// Parse strings
+var doc = XmlTree.Parse.String("<p> Hello World! </p>");
+Console.WriteLine(doc.nodes[0].tag); // > p
+Console.WriteLine(doc.nodes[0].value); // > Hello World!
+```
+
+```csharp
+// Include or ignore comments
+var options = new ParserOptions { comments = CommentOptions.Include };
+var doc = XmlTree.Parse.String("<!-- Comments work! -->", options);
+Console.WriteLine(doc.nodes[0].tag); // > !--
+Console.WriteLine(doc.nodes[0].value); // > Comments work!
+```
+
+### What you get
 
 * A full node tree of any given XML structure
 
@@ -28,17 +53,6 @@ A utility for parsing XML structures without all the hassle. What you get:
 
 * Automatic encoding from the prolog for `File` and `Byte` parsing
 
+#### Note
 
-
-## Example usage
-
-```csharp
-var doc = XmlTree.Parse.File("c:/dir/my-file.xml");
-foreach(var rootNode in doc.nodes) {
-    // Do something
-}
-```
-
-## Note
-
-This is **not** a deserialization utility, although it could be turned into one should you wish. This is a tool for getting the tree structure of an XML, which may be used to modify it. The tool was built for creating an HTML minifier for example, but may be used in any XML related workflow.
+This is **not** a deserialization utility, although it could be turned into one should you wish. This is a tool for getting the tree structure of XML data. The tool was for example built for creating an HTML minifier, but it may be used in any XML related workflow.
