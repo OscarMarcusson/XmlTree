@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using XmlNavigation.Utility;
+using XmlTree.Utility;
 
-namespace XmlNavigation
+namespace XmlTree
 {
-	public static class XmlParser
+	public static class Parse
 	{
-		public static XmlStructure FromFile(string path, ParserOptions options = null)
+		public static Document File(string path, ParserOptions options = null)
 		{
-			var xml = File.ReadAllBytes(path);
-			return FromBytes(xml, options);
+			var xml = System.IO.File.ReadAllBytes(path);
+			return Bytes(xml, options);
 		}
 
-		public static XmlStructure FromBytes(byte[] bytes, ParserOptions options = null)
+		public static Document Bytes(byte[] bytes, ParserOptions options = null)
 		{
 			// Resolve the prolog, if one exists, like: <?xml version="1.0" encoding="UTF-8"?>
 			var i = 0;
@@ -25,7 +25,7 @@ namespace XmlNavigation
 				i++;
 				bytes.SkipWhitespace(ref i);
 				if (i >= bytes.Length)
-					return bytes.Error(XmlError.UnexpectedEndOfFile);
+					return bytes.Error(ParseError.UnexpectedEndOfFile);
 
 				if (bytes[i] == '?')
 				{
@@ -39,16 +39,16 @@ namespace XmlNavigation
 					}
 
 					if (i >= bytes.Length)
-						return bytes.Error(XmlError.UnexpectedEndOfFile);
+						return bytes.Error(ParseError.UnexpectedEndOfFile);
 
-					if (bytes[i] == '<' || bytes[i] == '/') return bytes.Error(XmlError.Malformed, ((char)bytes[i]).ToString());
-					if (bytes[i] != '?') return bytes.Error(XmlError.Malformed, ((char)bytes[i]).ToString());
+					if (bytes[i] == '<' || bytes[i] == '/') return bytes.Error(ParseError.Malformed, ((char)bytes[i]).ToString());
+					if (bytes[i] != '?') return bytes.Error(ParseError.Malformed, ((char)bytes[i]).ToString());
 					i++;
 					bytes.SkipWhitespace(ref i);
 					if (i >= bytes.Length)
-						return bytes.Error(XmlError.UnexpectedEndOfFile);
+						return bytes.Error(ParseError.UnexpectedEndOfFile);
 
-					if (bytes[i] == '<' || bytes[i] == '/') return bytes.Error(XmlError.Malformed, ((char)bytes[i]).ToString());
+					if (bytes[i] == '<' || bytes[i] == '/') return bytes.Error(ParseError.Malformed, ((char)bytes[i]).ToString());
 					if (bytes[i] == '>') i++;
 					bytes.SkipWhitespace(ref i);
 					if (i < bytes.Length && bytes[i] == '>') i++;
@@ -58,8 +58,8 @@ namespace XmlNavigation
 					var mainStart = i;
 					var mainLength = bytes.Length - i;
 
-					var prolog = FromString(miniXml).nodes[0];
-					if (prolog.tag != "xml") return bytes.Error(XmlError.NotAllowed, prolog.tag);
+					var prolog = String(miniXml).nodes[0];
+					if (prolog.tag != "xml") return bytes.Error(ParseError.NotAllowed, prolog.tag);
 					var version = prolog.GetAttribute("version", "1.0");
 					var encoding = prolog.GetAttribute("encoding", "UTF-8");
 					var standalone = prolog.GetAttribute("standalone", "no");
@@ -84,10 +84,10 @@ namespace XmlNavigation
 							xml = Encoding.UTF32.GetString(bytes, mainStart, mainLength);
 							break;
 
-						default: return bytes.Error(XmlError.NotAllowed, encoding);
+						default: return bytes.Error(ParseError.NotAllowed, encoding);
 					}
 
-					var doc = FromString(xml, options);
+					var doc = String(xml, options);
 					doc.version = version;
 					return doc;
 				}
@@ -95,11 +95,11 @@ namespace XmlNavigation
 
 			// The standard fallback for XML is UTF-8
 			var defaultEncodedXml = Encoding.UTF8.GetString(bytes);
-			return FromString(defaultEncodedXml, options);
+			return String(defaultEncodedXml, options);
 		}
 
 
-		public static XmlStructure FromString(string xml, ParserOptions options = null)
+		public static Document String(string xml, ParserOptions options = null)
 		{
 			var optionsToUse = options?.CreateCopy() ?? DefaultParserOptions.XML;
 
@@ -123,8 +123,8 @@ namespace XmlNavigation
 					i = xml.IndexOf("-->", i);
 					if(i < 0)
 					{
-						var error = new XmlStructure(xml);
-						error.SetError(XmlError.UnexpectedEndOfFile, xml.Length, "Missing -->");
+						var error = new Document(xml);
+						error.SetError(ParseError.UnexpectedEndOfFile, xml.Length, "Missing -->");
 						return error;
 					}
 					i += 2;
@@ -145,8 +145,8 @@ namespace XmlNavigation
 				var end = xml.IndexOf('>', start + 1);
 				if(end < start)
 				{
-					var error = new XmlStructure(xml);
-					error.SetError(XmlError.UnexpectedEndOfFile, xml.Length, "Missing >");
+					var error = new Document(xml);
+					error.SetError(ParseError.UnexpectedEndOfFile, xml.Length, "Missing >");
 					return error;
 				}
 
@@ -163,7 +163,7 @@ namespace XmlNavigation
 			}
 
 
-			var doc = new XmlStructure(xml);
+			var doc = new Document(xml);
 			doc.docType = docType;
 			for (int i = skipped; i < xml.Length;)
 			{
@@ -172,7 +172,7 @@ namespace XmlNavigation
 					break;
 
 				NodeParser.Parse(doc, doc.nodes, xml, ref i, optionsToUse);
-				if (doc.error != XmlError.None)
+				if (doc.error != ParseError.None)
 					break;
 			}
 
@@ -198,7 +198,7 @@ namespace XmlNavigation
 				i++;
 		}
 
-		static XmlStructure Error(this byte[] bytes, XmlError error, string value = null)
+		static Document Error(this byte[] bytes, ParseError error, string value = null)
 		{
 			var xmlBuilder = new StringBuilder();
 			foreach(var b in bytes)
@@ -208,7 +208,7 @@ namespace XmlNavigation
 				xmlBuilder.Append((char)b);
 			}
 			var xml = xmlBuilder.ToString();
-			var errorDoc = new XmlStructure(xml);
+			var errorDoc = new Document(xml);
 			var index = errorDoc.xml.IndexOf('<');
 			if (!string.IsNullOrWhiteSpace(value))
 			{

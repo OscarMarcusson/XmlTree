@@ -1,4 +1,4 @@
-using XmlNavigation;
+using XmlTree;
 
 namespace Tests
 {
@@ -8,29 +8,29 @@ namespace Tests
 		[TestMethod]
 		public void From_doctype()
 		{
-			var doc = XmlParser.FromString($"<!DOCTYPE html>{html}");
+			var doc = Parse.String($"<!DOCTYPE html>{html}");
 			TestHtml(doc);
 		}
 
 		[TestMethod]
 		public void From_options()
 		{
-			var doc = XmlParser.FromString(html, DefaultParserOptions.HTML);
+			var doc = Parse.String(html, DefaultParserOptions.HTML);
 			TestHtml(doc);
 		}
 
 		[TestMethod]
 		public void Error_for_standard_xml()
 		{
-			var doc = XmlParser.FromString(html, DefaultParserOptions.XML);
-			Assert.AreEqual(XmlError.ClosingMissmatch, doc.error, "Expected closing missmatch since we never close the links in head, so the </head> does not match <link>");
+			var doc = Parse.String(html, DefaultParserOptions.XML);
+			Assert.AreEqual(ParseError.ClosingMissmatch, doc.error, "Expected closing missmatch since we never close the links in head, so the </head> does not match <link>");
 		}
 
 
 
-		private static void TestHtml(XmlStructure doc)
+		private static void TestHtml(Document doc)
 		{
-			Assert.AreEqual(XmlError.None, doc.error);
+			Assert.AreEqual(ParseError.None, doc.error);
 			Assert.AreEqual(1, doc.nodes.Count);
 			var html = doc.nodes[0];
 			Assert.AreEqual("html", html.tag);

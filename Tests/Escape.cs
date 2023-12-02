@@ -1,4 +1,4 @@
-using XmlNavigation;
+using XmlTree;
 
 namespace Tests
 {
@@ -8,7 +8,7 @@ namespace Tests
 		[TestMethod]
 		public void Element_names()
 		{
-			var doc = XmlParser.FromString("<div&lt;>div&lt;</div&lt;>", new ParserOptions { escape = EscapeFlags.ElementNames });
+			var doc = Parse.String("<div&lt;>div&lt;</div&lt;>", new ParserOptions { escape = EscapeFlags.ElementNames });
 			Assert.AreEqual(1, doc.nodes.Count);
 			var div = doc.nodes[0];
 			Assert.AreEqual("div<", div.tag);
@@ -20,7 +20,7 @@ namespace Tests
 		[TestMethod]
 		public void Element_text()
 		{
-			var doc = XmlParser.FromString("<div&lt;>div&lt;</div&lt;>", new ParserOptions { escape = EscapeFlags.Text });
+			var doc = Parse.String("<div&lt;>div&lt;</div&lt;>", new ParserOptions { escape = EscapeFlags.Text });
 			Assert.AreEqual(1, doc.nodes.Count);
 			var div = doc.nodes[0];
 			Assert.AreEqual("div&lt;", div.tag);
@@ -32,7 +32,7 @@ namespace Tests
 		[TestMethod]
 		public void Attribute_name()
 		{
-			var doc = XmlParser.FromString("<div&lt; &lt;='&lt;'>div&lt;</div&lt;>", new ParserOptions { escape = EscapeFlags.AttributeNames });
+			var doc = Parse.String("<div&lt; &lt;='&lt;'>div&lt;</div&lt;>", new ParserOptions { escape = EscapeFlags.AttributeNames });
 			Assert.AreEqual(1, doc.nodes.Count);
 			var div = doc.nodes[0];
 			Assert.AreEqual("div&lt;", div.tag);
@@ -48,7 +48,7 @@ namespace Tests
 		[TestMethod]
 		public void Attribute_value()
 		{
-			var doc = XmlParser.FromString("<div&lt; &lt;='&lt;'>div&lt;</div&lt;>", new ParserOptions { escape = EscapeFlags.AttributeValues });
+			var doc = Parse.String("<div&lt; &lt;='&lt;'>div&lt;</div&lt;>", new ParserOptions { escape = EscapeFlags.AttributeValues });
 			Assert.AreEqual(1, doc.nodes.Count);
 			var div = doc.nodes[0];
 			Assert.AreEqual("div&lt;", div.tag);

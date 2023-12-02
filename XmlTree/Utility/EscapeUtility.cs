@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace XmlNavigation.Utility
+namespace XmlTree.Utility
 {
 	internal static class EscapeUtility
 	{

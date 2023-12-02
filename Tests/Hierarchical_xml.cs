@@ -1,4 +1,4 @@
-using XmlNavigation;
+using XmlTree;
 
 namespace Tests
 {
@@ -12,15 +12,15 @@ namespace Tests
 		[DataRow(49, "<div><  correct   class  = \"Example\" >   Value   < /   incorrect></div>")]
 		public void Wrong_closing_tag(int errorIndex, string xml)
 		{
-			var doc = XmlParser.FromString(xml);
-			Assert.AreEqual(XmlError.ClosingMissmatch, doc.error);
+			var doc = Parse.String(xml);
+			Assert.AreEqual(ParseError.ClosingMissmatch, doc.error);
 			Assert.AreEqual(errorIndex, doc.errorIndex);
 		}
 
 		[TestMethod]
 		public void With_values()
 		{
-			var doc = XmlParser.FromString(@"
+			var doc = Parse.String(@"
 				<div-1>
 					<test-1></test-1>
 					<test-2 class=""example""></test-2>
@@ -69,7 +69,7 @@ namespace Tests
 		[TestMethod]
 		public void Self_closing()
 		{
-			var doc = XmlParser.FromString(@"
+			var doc = Parse.String(@"
 				<div>
 					<test-1/>
 					<test-2 class=""example""/>
@@ -118,7 +118,7 @@ namespace Tests
 		[TestMethod]
 		public void Food_menu_array()
 		{
-			var doc = XmlParser.FromString(w3SchoolsFoodMenu);
+			var doc = Parse.String(w3SchoolsFoodMenu);
 			Assert.AreEqual(1, doc.nodes.Count);
 			var menuNode = doc.nodes[0];
 			Assert.AreEqual("breakfast_menu", menuNode.tag);

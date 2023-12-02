@@ -1,4 +1,4 @@
-using XmlNavigation;
+using XmlTree;
 
 namespace Tests
 {
@@ -10,7 +10,7 @@ namespace Tests
 		[TestMethod]
 		public void Only_comment()
 		{
-			var doc = XmlParser.FromString("<!-- Include me -->", options);
+			var doc = Parse.String("<!-- Include me -->", options);
 			Assert.AreEqual(1, doc.nodes.Count);
 			Assert.AreEqual("!--", doc.nodes[0].tag);
 			Assert.AreEqual("Include me", doc.nodes[0].value);
@@ -19,7 +19,7 @@ namespace Tests
 		[TestMethod]
 		public void Div_containing_comment()
 		{
-			var doc = XmlParser.FromString("<div><!-- Include me --></div>", options);
+			var doc = Parse.String("<div><!-- Include me --></div>", options);
 			Assert.AreEqual(1, doc.nodes.Count);
 			var div = doc.nodes[0];
 			Assert.AreEqual("div", div.tag);
@@ -34,7 +34,7 @@ namespace Tests
 		[TestMethod]
 		public void Flat()
 		{
-			var doc = XmlParser.FromString(@"
+			var doc = Parse.String(@"
 				<!-- Start comment -->
 				<test-1></test-1>
 				<test-2 class=""example""/>
@@ -87,7 +87,7 @@ namespace Tests
 		[TestMethod]
 		public void Hierarchical()
 		{
-			var doc = XmlParser.FromString(w3SchoolsFoodMenu, options);
+			var doc = Parse.String(w3SchoolsFoodMenu, options);
 			Assert.AreEqual(3, doc.nodes.Count);
 
 			// First comment

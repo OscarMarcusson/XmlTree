@@ -1,4 +1,4 @@
-using XmlNavigation;
+using XmlTree;
 
 namespace Tests
 {
@@ -8,14 +8,14 @@ namespace Tests
 		[TestMethod]
 		public void Only_comment()
 		{
-			var doc = XmlParser.FromString("<!-- Ignore me -->");
+			var doc = Parse.String("<!-- Ignore me -->");
 			Assert.AreEqual(0, doc.nodes.Count);
 		}
 
 		[TestMethod]
 		public void Div_with_ignored_comment_child_becomes_self_closing()
 		{
-			var doc = XmlParser.FromString("<div><!-- Ignore me --></div>");
+			var doc = Parse.String("<div><!-- Ignore me --></div>");
 			Assert.AreEqual(1, doc.nodes.Count);
 			var div = doc.nodes[0];
 			Assert.AreEqual("div", div.tag);
@@ -26,7 +26,7 @@ namespace Tests
 		[TestMethod]
 		public void Flat()
 		{
-			var doc = XmlParser.FromString(@"
+			var doc = Parse.String(@"
 				<!-- Start comment -->
 				<test-1></test-1>
 				<test-2 class=""example""/>
@@ -73,7 +73,7 @@ namespace Tests
 		[TestMethod]
 		public void Hierarchical()
 		{
-			var doc = XmlParser.FromString(w3SchoolsFoodMenu);
+			var doc = Parse.String(w3SchoolsFoodMenu);
 			Assert.AreEqual(1, doc.nodes.Count);
 			var menuNode = doc.nodes[0];
 			Assert.AreEqual("breakfast_menu", menuNode.tag);

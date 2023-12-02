@@ -1,4 +1,4 @@
-using XmlNavigation;
+using XmlTree;
 
 namespace Tests
 {
@@ -8,7 +8,7 @@ namespace Tests
 		[TestMethod]
 		public void Empty()
 		{
-			var doc = XmlParser.FromString("");
+			var doc = Parse.String("");
 			Assert.AreEqual(0, doc.nodes.Count);
 		}
 	}

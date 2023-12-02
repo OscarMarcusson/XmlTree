@@ -1,4 +1,4 @@
-using XmlNavigation;
+using XmlTree;
 
 namespace Tests
 {
@@ -12,15 +12,15 @@ namespace Tests
 		[DataRow(44, "<  correct   class  = \"Example\" >   Value   < /   incorrect>")]
 		public void Wrong_closing_tag(int errorIndex, string xml)
 		{
-			var doc = XmlParser.FromString(xml);
-			Assert.AreEqual(XmlError.ClosingMissmatch, doc.error);
+			var doc = Parse.String(xml);
+			Assert.AreEqual(ParseError.ClosingMissmatch, doc.error);
 			Assert.AreEqual(errorIndex, doc.errorIndex);
 		}
 
 		[TestMethod]
 		public void With_values()
 		{
-			var doc = XmlParser.FromString(@"
+			var doc = Parse.String(@"
 				<test-1></test-1>
 				<test-2 class=""example""></test-2>
 				<test-3 class=""example"" id=""lorem ipsum"">   Hello World    </test-3>
@@ -64,7 +64,7 @@ namespace Tests
 		[TestMethod]
 		public void Self_closing()
 		{
-			var doc = XmlParser.FromString(@"
+			var doc = Parse.String(@"
 				<test-1/>
 				<test-2 class=""example""/>
 				<test-3 class=""example"" id=""lorem ipsum""/>

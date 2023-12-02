@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Title>XML Navigation</Title>
-    <VersionPrefix>0.1.0</VersionPrefix>
+    <Title>XML Tree</Title>
+    <VersionPrefix>0.1.10</VersionPrefix>
     <Authors>Oscar_Marcusson</Authors>
     <RepositoryUrl>https://github.com/OscarMarcusson/XmlNavigation</RepositoryUrl>
   </PropertyGroup>

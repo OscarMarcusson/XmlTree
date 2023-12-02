@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace XmlNavigation
+namespace XmlTree
 {
-	public enum XmlError
+	public enum ParseError
 	{
 		None = 0,
 		ClosingMissmatch = 1,

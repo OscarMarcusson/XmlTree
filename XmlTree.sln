@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34316.72
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlNavigation", "XmlNavigation\XmlNavigation.csproj", "{95078EBE-7230-4B97-A9D8-23C66ED6F4F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmlTree", "XmlTree\XmlTree.csproj", "{95078EBE-7230-4B97-A9D8-23C66ED6F4F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{929E41D9-363A-40F9-886C-2DC323FBC422}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{929E41D9-363A-40F9-886C-2DC323FBC422}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

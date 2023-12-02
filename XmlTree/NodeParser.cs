@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using XmlNavigation.Utility;
+using XmlTree.Utility;
 
-namespace XmlNavigation
+namespace XmlTree
 {
 	internal static class NodeParser
 	{
@@ -12,20 +12,20 @@ namespace XmlNavigation
 		static bool allowGoodAttributeEscapes = true;
 
 
-		internal static void Parse(XmlStructure doc, List<XmlNode> parent, string xml, ref int i, ParserOptions options)
+		internal static void Parse(Document doc, List<Node> parent, string xml, ref int i, ParserOptions options)
 		{
 			var builder = new StringBuilder(64);
 			xml.SkipWhitespace(ref i);
 			if (i >= xml.Length)
 			{
-				doc.SetError(XmlError.UnexpectedEndOfFile, i);
+				doc.SetError(ParseError.UnexpectedEndOfFile, i);
 				return;
 			}
-			if (xml[i] != '<') { doc.SetError(XmlError.Malformed, i, "Expected <"); return; }
+			if (xml[i] != '<') { doc.SetError(ParseError.Malformed, i, "Expected <"); return; }
 
 			// Get tag
 			xml.GotoNextNonWhitespace(ref i);
-			if (i > xml.Length) { doc.SetError(XmlError.UnexpectedEndOfFile, i, "Missing element tag"); return; }
+			if (i > xml.Length) { doc.SetError(ParseError.UnexpectedEndOfFile, i, "Missing element tag"); return; }
 			var startOfTagIndex = i;
 			if (xml[i] == '!')
 			{
@@ -35,12 +35,12 @@ namespace XmlNavigation
 					i += 2;
 					xml.GotoNextNonWhitespace(ref i);
 					var commentEndIndex = xml.IndexOf("-->", i);
-					if(commentEndIndex < 0) { doc.SetError(XmlError.UnexpectedEndOfFile, xml.Length, "Expected -->"); return; }
+					if(commentEndIndex < 0) { doc.SetError(ParseError.UnexpectedEndOfFile, xml.Length, "Expected -->"); return; }
 
 					if(options.comments == CommentOptions.Include)
 					{
 						var comment = xml.Substring(i, commentEndIndex - i).Trim();
-						parent.Add(new XmlNode
+						parent.Add(new Node
 						{
 							tag = "!--",
 							value = comment,
@@ -64,8 +64,8 @@ namespace XmlNavigation
 			}
 			var tag = builder.ToString();
 			builder.Clear();
-			if (tag.Length == 0) { doc.SetError(XmlError.UnexpectedEndOfFile, i, "Missing element tag"); return; }
-			if(tag.Equals("!doctype", StringComparison.OrdinalIgnoreCase)) { doc.SetError(XmlError.NotAllowed, startOfTagIndex, "The <!DOCTYPE> may only be set at the beginning of the file"); return; }
+			if (tag.Length == 0) { doc.SetError(ParseError.UnexpectedEndOfFile, i, "Missing element tag"); return; }
+			if(tag.Equals("!doctype", StringComparison.OrdinalIgnoreCase)) { doc.SetError(ParseError.NotAllowed, startOfTagIndex, "The <!DOCTYPE> may only be set at the beginning of the file"); return; }
 
 			xml.SkipWhitespace(ref i);
 			if(i > xml.Length)
@@ -157,11 +157,11 @@ namespace XmlNavigation
 				if (xml[i] == '/')
 					xml.GotoNextNonWhitespace(ref i);
 
-				if (i > xml.Length) { doc.SetError(XmlError.UnexpectedEndOfFile, i, "Expected />"); return; }
-				if (xml[i] != '>') { doc.SetError(XmlError.Malformed, i, "Expected >"); return; }
+				if (i > xml.Length) { doc.SetError(ParseError.UnexpectedEndOfFile, i, "Expected />"); return; }
+				if (xml[i] != '>') { doc.SetError(ParseError.Malformed, i, "Expected >"); return; }
 				xml.GotoNextNonWhitespace(ref i);
 				
-				parent.Add(new XmlNode
+				parent.Add(new Node
 				{
 					tag = tag,
 					attributes = attributes,
@@ -177,7 +177,7 @@ namespace XmlNavigation
 			// Unclosed tag at the end of a file, I guess we'll accept it for now, kind of self closing in a way
 			if (i > xml.Length)
 			{
-				parent.Add(new XmlNode
+				parent.Add(new Node
 				{
 					tag = tag,
 					attributes = attributes,
@@ -188,7 +188,7 @@ namespace XmlNavigation
 
 
 			// Now here we finally go, the actual content parsing
-			var node = new XmlNode
+			var node = new Node
 			{
 				tag = tag,
 				attributes = attributes,
@@ -219,7 +219,7 @@ namespace XmlNavigation
 
 				if (builder.ToString() != node.tag) 
 				{
-					doc.SetError(XmlError.ClosingMissmatch, xml.LastIndexOf('<', i), $"Expected {node.tag}");
+					doc.SetError(ParseError.ClosingMissmatch, xml.LastIndexOf('<', i), $"Expected {node.tag}");
 					return;
 				}
 				xml.SkipWhitespace(ref i);
@@ -233,19 +233,19 @@ namespace XmlNavigation
 			// Else, we have some actual hierarchical content less goooooo
 			else
 			{
-				node.children = new List<XmlNode>();
+				node.children = new List<Node>();
 
 				// Add the text up until now as a text value, like `<div> This text <span>!</span></div>`
 				var prefixText = builder.ToString().Trim();
 				if (prefixText.Length > 0)
-					node.children.Add(new XmlNode { value = prefixText });
+					node.children.Add(new Node { value = prefixText });
 
 				i = startOfTagIndex;
-				while (i < xml.Length && doc.error == XmlError.None)
+				while (i < xml.Length && doc.error == ParseError.None)
 				{
 					// Parse the first child node
 					Parse(doc, node.children, xml, ref i, options);
-					if (doc.error != XmlError.None) return;
+					if (doc.error != ParseError.None) return;
 					xml.SkipWhitespace(ref i);
 					if (i >= xml.Length) return;
 
@@ -267,7 +267,7 @@ namespace XmlNavigation
 							i = xml.IndexOf('>', nextIndex) + 1;
 							if(i < nextIndex)
 							{
-								doc.SetError(XmlError.Malformed, nextIndex, "No closing >");
+								doc.SetError(ParseError.Malformed, nextIndex, "No closing >");
 								i = nextIndex;
 								return;
 							}

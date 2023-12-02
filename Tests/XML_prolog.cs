@@ -1,5 +1,5 @@
 using System.Text;
-using XmlNavigation;
+using XmlTree;
 
 namespace Tests
 {
@@ -25,9 +25,9 @@ namespace Tests
 			var encoding = encodings[encodingName];
 			var source = $"<?xml version=\"1.0\" encoding=\"{encodingName}\"?>\n<example>едц!</example>";
 			var bytes = encoding.GetBytes(source);
-			var doc = XmlParser.FromBytes(bytes);
+			var doc = Parse.Bytes(bytes);
 
-			Assert.AreEqual(XmlError.None, doc.error);
+			Assert.AreEqual(ParseError.None, doc.error);
 			Assert.AreEqual(1, doc.nodes.Count);
 
 			var node = doc.nodes[0];
@@ -37,20 +37,20 @@ namespace Tests
 
 
 		[TestMethod]
-		[DataRow(@"<?", XmlError.UnexpectedEndOfFile)]
-		[DataRow(@"<?xml", XmlError.UnexpectedEndOfFile)]
-		[DataRow(@"<?incorrect version=""1.0"" encoding=""UTF-8""?> <example/>", XmlError.NotAllowed)]
-		[DataRow(@"<?xml version=""1.0"" encoding=""UTF-8""  <example/>", XmlError.Malformed)]
-		[DataRow(@"<?xml version=""1.0"" encoding=""UTF-8""? <example/>", XmlError.Malformed)]
-		[DataRow(@"<?xml version=""1.0"" encoding=""UTF-8""> <example/>", XmlError.Malformed)]
-		[DataRow(@"<?xml version=""1.0"" encoding=""UTF-8""", XmlError.UnexpectedEndOfFile)]
-		[DataRow(@"<?xml version=""1.0"" encoding=""UTF-9999""?> <example/>", XmlError.NotAllowed)]
-		[DataRow(@"<?xml version=""1.0"" encoding=""INCORRECT""?> <example/>", XmlError.NotAllowed)]
-		[DataRow(@"<?xml version=""1.0"" encoding=""""?> <example/>", XmlError.NotAllowed)]
-		public void Invalid(string xml, XmlError error)
+		[DataRow(@"<?", ParseError.UnexpectedEndOfFile)]
+		[DataRow(@"<?xml", ParseError.UnexpectedEndOfFile)]
+		[DataRow(@"<?incorrect version=""1.0"" encoding=""UTF-8""?> <example/>", ParseError.NotAllowed)]
+		[DataRow(@"<?xml version=""1.0"" encoding=""UTF-8""  <example/>", ParseError.Malformed)]
+		[DataRow(@"<?xml version=""1.0"" encoding=""UTF-8""? <example/>", ParseError.Malformed)]
+		[DataRow(@"<?xml version=""1.0"" encoding=""UTF-8""> <example/>", ParseError.Malformed)]
+		[DataRow(@"<?xml version=""1.0"" encoding=""UTF-8""", ParseError.UnexpectedEndOfFile)]
+		[DataRow(@"<?xml version=""1.0"" encoding=""UTF-9999""?> <example/>", ParseError.NotAllowed)]
+		[DataRow(@"<?xml version=""1.0"" encoding=""INCORRECT""?> <example/>", ParseError.NotAllowed)]
+		[DataRow(@"<?xml version=""1.0"" encoding=""""?> <example/>", ParseError.NotAllowed)]
+		public void Invalid(string xml, ParseError error)
 		{
 			var bytes = Encoding.UTF8.GetBytes(xml);
-			var doc = XmlParser.FromBytes(bytes);
+			var doc = Parse.Bytes(bytes);
 
 			Assert.AreEqual(error, doc.error);
 		}

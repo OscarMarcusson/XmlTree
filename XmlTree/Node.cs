@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using XmlNavigation.Utility;
+using XmlTree.Utility;
 
-namespace XmlNavigation
+namespace XmlTree
 {
-	public class XmlNode
+	public class Node
 	{
 		public string tag = "";
 		public Dictionary<string, string> attributes;
 		public string value = "";
 
-		public List<XmlNode> children;
+		public List<Node> children;
 
 
 
